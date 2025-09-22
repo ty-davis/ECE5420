@@ -1,0 +1,50 @@
+\documentclass[11pt]{style}
+
+\usepackage[english]{babel}
+\usepackage{siunitx}
+\usepackage{graphicx}
+\usepackage{blindtext}
+\usepackage{amsmath,amssymb,units}
+\usepackage[outdir=./]{epstopdf}
+\memostudent{Ty Davis}
+\memocourse{ECE 5420}
+\memosubject{Programming Assignment 2 - LZ Compression Algorithm}
+\memodate{\today}
+\logo{\includegraphics[width=0.5\textwidth]{ece_horiz.pdf}}
+
+\begin{document}
+\maketitle
+
+\section{The entropy of the source}
+
+There are 100 0's and 900 1's in the \verb!source1.txt! file. We will use the equation for
+entropy listed below:
+
+\[
+  H(X) = - \Sigma_{i=1}^{M} p_i \log_2 ( p_i )
+\]
+
+We find that 
+
+\[
+  H(X) = - 0.1 \log_2 (0.1) - 0.9 \log_2 ( 0.9 ) = 0.469
+\]
+
+
+\section{How many bits are used on average to represent each information bit after compression?}
+
+For the \verb!source1.txt! file, the resulting information was 840 bits long, so
+the average compression rate is 0.84.
+
+\section{Is it possible to find a better compression algorithm? Why or why not?}
+
+Yes, the entropy represents the ``theoretical lower
+bound of how many bits are required to encode a source
+symbol.'' So there is, in theory, a lossless compression
+of this data that will take only $\approx470$ bits.
+
+\section{What’s your W number?}
+
+W01367741
+
+\end{document}
