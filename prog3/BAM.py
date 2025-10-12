@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import time
+import sys
 
 N = 10**9
 Ep = 1
@@ -15,37 +16,22 @@ def main():
         # SNR = Ep / (N0 / 2)
         # N0 = 2 * Ep / SNR
         n0 = 2 * Ep / snr
-        # bits = np.random.randint(0, 2, N)
-        # noise = np.random.normal(0, np.sqrt(n0/2), N)
-        # lets break it up so it doesn't eat all my RAM
 
+        # lets break it up so it doesn't eat all my RAM
         segment_amount = 10 ** 8
         ptr = 0
         correct_total = 0
-        while ptr <= N:
-            amount = min(ptr, N)
+        while ptr < N:
+            amount = min(segment_amount, N-ptr)
             bits_segment = np.random.randint(0, 2, amount)
             noise_segment = np.random.normal(0, np.sqrt(n0/2), amount)
-            # bits_segment = bits[ptr:ptr+segment_amount]
-            # noise_segment = noise[ptr:ptr+segment_amount]
             correct_segment = sum(((((bits_segment * 2 - 1) * Ep) + noise_segment > 0).astype(int) == bits_segment).astype(int))
             correct_total += correct_segment
             print(ptr, correct_segment, "\tELAPSED:", time.time() - start)
             ptr += segment_amount
-        # mapped_bits = (bits * 2 - 1) * Ep
-        # received = mapped_bits + noise
-        # decided = (received > 0).astype(int)
-        # correct_bits = (decided == bits).astype(int)
-        # correct_total = sum(correct_bits)
-        # correct_total = sum(((((bits * 2 - 1) * Ep) + noise > 0).astype(int) == bits).astype(int))
         ber_results.append((N - correct_total) / N)
 
         print(n0)
-        # print(bits)
-        # print(mapped_bits)
-        # print(received)
-        # print(decided)
-        # print(correct_bits)
         print(correct_total)
 
 
@@ -55,12 +41,27 @@ def main():
     print("TOTAL TIME: ", end - start)
 
     print(ber_results)
-    plt.plot(SNR_dB, ber_results)
+    plot_data(ber_results)
+
+def plot_data(data):
+    plt.plot(SNR_dB, data)
+    plt.title("Bit Error Rates for BAM")
+    plt.xlabel("Signal-to-Noise Ratio (dB)")
+    plt.ylabel("Error Probability")
     plt.yscale('log')
     plt.grid()
     plt.show()
 
 
+def just_data():
+    # calculated by an earlier run and preserved for the sake of convenience
+    d = [0.158664578, 0.104024821, 0.056507059, 0.02300095, 0.006004842, 0.000781807, 3.4137e-05]
+    plot_data(d)
+
 
 if __name__ == '__main__':
+    if '-d' in sys.argv:
+        just_data()
+        exit()
     main()
+
