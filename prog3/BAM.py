@@ -2,9 +2,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 import time
 import sys
+from scipy.special import erfc
 from multiprocessing import Pool, cpu_count
 
-N = 10**9
+N = 10**4
 Ep = 1
 SNR_dB = np.array([0, 2, 4, 6, 8, 10, 12])
 
@@ -23,8 +24,9 @@ def main():
     np.random.seed(int(time.time()))
     snr_linear = 10 ** (SNR_dB / 10)
     ber_results = []
+    ber_theory = []
 
-    num_processes = 3
+    num_processes = 10
 
     for snr in snr_linear:
         # SNR = Ep / (N0 / 2)
@@ -50,18 +52,27 @@ def main():
 
         correct_total = sum(results)
         ber_results.append((N - correct_total) / N)
+        inQ_val = np.sqrt(2 * Ep / n0)
+        ber_theory_val = 0.5 * erfc(inQ_val / np.sqrt(2))
+        ber_theory.append(ber_theory_val)
 
-        print(f"SNR: {snr:.2f} CORRECT: {correct_total} BER: {ber_results[-1]:.6f}")
+        print(f"N0: {n0:.8f} Ep/N0: {Ep / n0:.3f} Ep/N0 in DB: {10 * np.log10(Ep / n0):.3f} inQ: {inQ_val:.8f} SNR: {snr:.2f} CORRECT: {correct_total} BER theory: {ber_theory_val:.5e} BER sim: {ber_results[-1]:.5e}")
         print(f"ELAPSED: {time.time() - start:.2f}s")
-        print("\n----\n")
     end = time.time()
     print("TOTAL TIME: ", end - start)
 
     print(ber_results)
-    plot_data(ber_results)
+    plot_data(ber_results, ber_theory)
 
-def plot_data(data):
-    plt.plot(SNR_dB, data)
+def Q(x, n):
+    return 0.5 * erfc(x / np.sqrt(n)) 
+
+def plot_data(data_sim, data_theory):
+    for s, t in zip(data_sim, data_theory):
+        print(f"SIM: {s:.4e}   THEORY: {t:.4e}")
+    plt.plot(SNR_dB, data_theory, c="#565149", label="Theoretical")
+    plt.plot(SNR_dB, data_sim, 'o', c="#492365", label="Simulated")
+    plt.legend()
     plt.title("Bit Error Rates for BAM")
     plt.xlabel("Signal-to-Noise Ratio (dB)")
     plt.ylabel("Error Probability")
@@ -72,8 +83,11 @@ def plot_data(data):
 
 def just_data():
     # calculated by an earlier run and preserved for the sake of convenience
-    d = [0.158664578, 0.104024821, 0.056507059, 0.02300095, 0.006004842, 0.000781807, 3.4137e-05]
-    plot_data(d)
+    d_sim = [0.158664578, 0.104024821, 0.056507059, 0.02300095, 0.006004842, 0.000781807, 3.4137e-05]
+    d_theory = [ 1.58655e-01, 1.04029e-01, 5.64953e-02, 2.30071e-02, 6.00439e-03, 7.82701e-04, 3.43026e-05 ]
+
+
+    plot_data(d_sim, d_theory)
 
 
 if __name__ == '__main__':

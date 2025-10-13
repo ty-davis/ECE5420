@@ -1,0 +1,52 @@
+\documentclass[11pt]{style}
+
+\usepackage[english]{babel}
+\usepackage{siunitx}
+\usepackage{graphicx}
+\usepackage{blindtext}
+\usepackage{amsmath,amssymb,units}
+\usepackage[outdir=./]{epstopdf}
+\memostudent{Ty Davis}
+\memocourse{ECE 5420}
+\memosubject{Programming Assignment 3 - Binary Antipodal Modulation}
+\memodate{\today}
+\logo{\includegraphics[width=0.5\textwidth]{ece_horiz.pdf}}
+
+\begin{document}
+\maketitle
+
+The following are the values that I calculated for the assignment.
+
+\begin{table}[h!]
+  \centering
+  \small
+\begin{tabular}{c|c c c c c c c}
+  $E_p$ & 1 & 1 & 1 & 1 & 1 & 1 & 1 \\
+  $N_0$ & 2.000 & 1.262 & 0.796 & 0.502 & 0.317 & 0.200 & 0.126 \\
+  $\frac{E_p}{N_0}$ & 0.500 & 0.792 & 1.256 & 1.991 & 3.155 & 5.000 & 7.924 \\
+  $\frac{E_p}{N_0}$ in dB & -3.010 & -1.010 & 0.990 & 2.990 & 4.990 & 6.990 & 8.990 \\
+  $P_b$ in $Q$ function & 1.000 & 1.259 & 1.585 & 1.995 & 2.512 & 3.162 & 3.981 \\
+  $P_b$ Theoretical & 1.5865E-01 & 1.0403E-01 & 5.6495E-02 & 2.3007E-02 & 6.0044E-03 & 7.8270E-04 & 3.4303E-05 \\
+  $P_b$ Simulation & 1.5766E-01 & 1.0402E-01 & 5.6507E-02 & 2.3001E-02 & 6.0048E-03 & 7.8181E-04 & 3.4137E-05 \\
+
+\end{tabular}
+\end{table}
+
+\begin{figure}[h1]
+  \centering
+  \includegraphics[width=0.8\textwidth]{../ber.png}
+\end{figure}
+
+Output from the Python script:
+
+\begin{verbatim}
+SIM: 1.5866e-01   THEORY: 1.5865e-01
+SIM: 1.0402e-01   THEORY: 1.0403e-01
+SIM: 5.6507e-02   THEORY: 5.6495e-02
+SIM: 2.3001e-02   THEORY: 2.3007e-02
+SIM: 6.0048e-03   THEORY: 6.0044e-03
+SIM: 7.8181e-04   THEORY: 7.8270e-04
+SIM: 3.4137e-05   THEORY: 3.4303e-05
+\end{verbatim}
+
+\end{document}
