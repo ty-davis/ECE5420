@@ -1,0 +1,322 @@
+\hypertarget{problem-1}{%
+\section*{Problem 1}\label{problem-1}}
+
+\hypertarget{a-find-the-upper-and-lower-bounds-of-the-symbol-error-rate}{%
+\subsection*{a) Find the upper and lower bounds of the symbol error
+rate}\label{a-find-the-upper-and-lower-bounds-of-the-symbol-error-rate}}
+
+\(d_\text{min}\) = 2 and \(M = 8\)
+
+Use the following things for upper and lower bound of the error rates:
+
+Upper bound: \[
+\begin{align*}
+P_e &\leq (M-1) Q\left(\frac{d_\text{min}}{\sqrt{2N_0}}\right)
+\\ \\
+&\leq 7 \cdot Q\left(\frac{2}{\sqrt{2N_0}}\right)
+\\ \\
+P_e &\leq 7 \cdot Q\left(\sqrt{\frac{2}{N_0}}\right)
+\end{align*}
+\]
+
+Lower bound: \[
+\begin{align*}
+P_e &\geq \frac{1}{M} Q\left(\frac{d_\text{min}}{\sqrt{2N_0}}\right)
+\\ \\
+P_e &\geq \frac{1}{8} Q\left(\sqrt{\frac{2}{N_0}}\right)
+\end{align*}
+\]
+
+\hypertarget{b-find-the-snr}{%
+\subsection*{b) Find the SNR}\label{b-find-the-snr}}
+
+First we need to find the average energy of the symbols.
+
+\[
+\overline{E_s} = \frac{1}{M} \sum_{i=1}^{M} s_i^2
+\]
+
+For the four outside corners \(E_s = (\pm 2)^2 + (\pm \sqrt{3})^2 = 7\)
+For the two on vertical axis \(E_s = (\pm \sqrt{3})^2 = 3\) For the two
+on horizontal axis \(E_s = (\pm \sqrt{1})^2 = 1\)
+
+\[
+\begin{align*}
+\overline{E_s} &= \frac{1}{8} \cdot (7 + 7 + 7 + 7 + 3 + 3 + 1 + 1) \\
+&= \frac{36}{8} \\
+&= \frac{9}{2}
+\end{align*}
+\] Signal to noise ratio \(r_s\) is
+
+\[
+r_s = \frac{\overline{E_s}}{N_0}
+\] \[
+\boxed{r_s = \frac{4.5}{N_0}}
+\]
+
+\hypertarget{problem-2}{%
+\section*{Problem 2}\label{problem-2}}
+
+\hypertarget{a-ser-of-given-lines-not-optimal}{%
+\subsection*{a) SER of given lines (not
+optimal)}\label{a-ser-of-given-lines-not-optimal}}
+
+\[
+\begin{align*}
+P_e &= \frac{1}{M} \sum{\mathbb{P}(r \notin D_i | i \text{ is sent})} \\
+&= \frac{1}{4}\big(\mathbb{P}(s_1 + n > -2) + \mathbb{P}(s_2 + n < -2)  ... \big) \\
+\end{align*}
+\]
+
+\hypertarget{b-find-optimal-decision-regions}{%
+\subsection*{b) Find optimal decision
+regions}\label{b-find-optimal-decision-regions}}
+
+\[
+\mathbb{P}(s_i)f(r|s_i) \lessgtr \mathbb{P}(s_j)f(r|s_j) \\
+\]
+
+This is the PDF \[
+\begin{align*}
+f(x) &= \frac{1}{\sqrt{2\pi \sigma ^ 2}} \exp\left(\frac{-(x-\mu)^2}{2 \sigma^2}\right) \\
+f(r|s_i) &= \frac{1}{\sqrt{2\pi \sigma ^ 2}} \exp\left(\frac{-(r - s_i -\mu)^2}{2 \sigma^2}\right) \\
+\end{align*}
+\]
+
+Set the neighboring PDFs equal to each other to solve for \(r\).
+Symbolically solving looks like the following:
+
+\[
+\begin{align*}
+\mathbb{P}(s_i)f(r|s_i) &\gtrless \mathbb{P}(s_j)f(r|s_j)
+\\ \\
+\mathbb{P}(s_i)\frac{1}{\sqrt{2\pi \sigma ^ 2}} \exp\left(\frac{-(r - s_i -\mu)^2}{2 \sigma^2}\right) 
+&\gtrless
+\mathbb{P}(s_j)\frac{1}{\sqrt{2\pi \sigma ^ 2}} \exp\left(\frac{-(r - s_j -\mu)^2}{2 \sigma^2}\right) 
+\\
+\mathbb{P}(s_i)\exp\left(\frac{-(r - s_i -\mu)^2}{2 \sigma^2}\right) 
+&\gtrless
+\mathbb{P}(s_j)\exp\left(\frac{-(r - s_j -\mu)^2}{2 \sigma^2}\right) 
+\\ \\
+\frac
+{\exp\left(\frac{-(r - s_i -\mu)^2}{2 \sigma^2}\right)}
+{\exp\left(\frac{-(r - s_j -\mu)^2}{2 \sigma^2}\right)}
+&\gtrless
+\frac{\mathbb{P}(s_i)}{\mathbb{P}(s_j)}
+\\ \\
+\exp\left(\frac{-(r-s_i-\mu)^2 + (r-s_j-\mu)^2}{2\sigma^2}\right)
+&\gtrless 
+\frac{\mathbb{P}(s_i)}{\mathbb{P}(s_j)}
+\\
+2rs_i - s_i^2 - 2s_i \mu - 2rs_j +s_i^2+2s_j\mu
+&\gtrless
+2\sigma^2\cdot \ln\left(\frac{\mathbb{P}(s_i)}{\mathbb{P}(s_j)}\right)
+\\
+r(2s_i -2s_j)
+&\gtrless
+\left[2\sigma^2 \ln\left(\frac{\mathbb{P}(s_j)}{\mathbb{P}(s_i)}\right) + s_i^2 +2s_i\mu - s_j^2 - 2s_j\mu\right]
+\\ \\
+r
+&\gtrless
+\frac{\left[2\sigma^2 \ln\left(\frac{\mathbb{P}(s_j)}{\mathbb{P}(s_i)}\right) + s_i^2 +2s_i\mu - s_j^2 - 2s_j\mu\right]}{2s_i-2s_j}
+\end{align*}
+\]
+
+Plug in the proper values for \(s_i\), \(s_j\), and their probabilities
+and you'll get the proper decision thresholds.
+
+\[
+\begin{align*}
+r_{th\_1,2} &\gtrless -\frac{1}{4} \sigma^2 \ln(3) - 2 + \mu \\
+r_{th\_2,3} &\gtrless 1 + \mu \\
+r_{th\_3,4} &\gtrless -\frac{1}{2} \sigma^2 \ln\left(\frac{1}{3}\right) + 3 + \mu
+\end{align*}
+\]
+
+\hypertarget{c-solve-for-ser-with-the-decision-thresholds-you-found-in-b}{%
+\subsection*{c) Solve for SER with the decision thresholds you found in
+(b)}\label{c-solve-for-ser-with-the-decision-thresholds-you-found-in-b}}
+
+Use the following:
+
+\[
+\begin{align*}
+P_e = \frac{1}{4} \Big(
+\mathbb{P}(s_1 + n > r_{th\_1,2}) +
+\mathbb{P}(s_2 + n < r_{th\_1,2}) + 
+\mathbb{P}(s_2 + n > r_{th\_2,3}) +  \dots \\
+\mathbb{P}(s_3 + n < r_{th\_2,3}) +  
+\mathbb{P}(s_3 + n > r_{th\_3,4}) +  
+\mathbb{P}(s_4 + n < r_{th\_3,4}) +  
+\Big)
+\end{align*}
+\]
+
+\[
+\begin{align*}
+P_e = \frac{1}{4} \Big(
+Q\left( \frac{r_{th\_1,2} + 4 - \mu}{\sigma} \right) + \dots \\
+\left(1- Q\left( \frac{r_{th\_1,2} - \mu}{\sigma} \right)\right) +
+Q\left( \frac{r_{th\_2,3} - \mu}{\sigma} \right) + \dots \\
+\left(1- Q\left( \frac{r_{th\_2,3} - 2 - \mu}{\sigma} \right)\right) +
+Q\left( \frac{r_{th\_3,4} - 2 - \mu}{\sigma} \right) + \dots \\
+\left(1- Q\left( \frac{r_{th\_3,4} - 4 - \mu}{\sigma} \right)\right)
+\Big)
+\end{align*}
+\]
+
+\hypertarget{problem-3}{%
+\section*{Problem 3}\label{problem-3}}
+
+4-ary constellation is sent with the signal space
+\(s_i(t)=p(t) \cos(2\pi f_ct + \theta_i)\) with \(\theta\) values
+\(0, \frac{\pi}{4}, \pi, \frac{7\pi}{4}\).
+
+\begin{enumerate}
+\def\labelenumi{\alph{enumi})}
+\tightlist
+\item
+  Find the representation of the signals in vector form.
+\item
+  Find the upper and lower bound of the symbol error rate.
+\end{enumerate}
+
+\hypertarget{a}{%
+\subsection*{a)}\label{a}}
+
+\[
+S_i = A_i p(t) \cos (2\pi f_ct + \theta_i)
+\] Let \(A_i = 1\) \[
+\begin{align*}
+    S_i &= p(t)\cos (2\pi f_ct)\cos(\theta_i) - p(t)\sin(2\pi f_ct)\sin(\theta_i) \\
+    &= \phi_1p(t) \cos(\theta_i) - \phi_2p(t)\sin(\theta_i)
+\end{align*}
+\]
+
+\hypertarget{prove-the-orthogonality-if-you-feel-like-it}{%
+\subsubsection*{Prove the orthogonality if you feel like
+it}\label{prove-the-orthogonality-if-you-feel-like-it}}
+
+Slide 7-02
+
+\[
+s_i =
+\begin{bmatrix}
+p(t)\cos(\theta_i) \\
+-p(t)\sin(\theta_i) \\
+\end{bmatrix}
+\]
+
+So \(s_1 = \begin{bmatrix} 1 \\ 0 \end{bmatrix}\),
+\(s_2 = \begin{bmatrix} \sqrt{2}/2 \\ -\sqrt{2}/2 \end{bmatrix}\),
+\(s_3 = \begin{bmatrix} -1 \\ 0 \end{bmatrix}\),
+\(s_4 = \begin{bmatrix} \sqrt{2}/2 \\ \sqrt{2}/2 \end{bmatrix}\)
+
+The \(s_2\) term has the negative instead of \(s_4\) because of the
+identity used above to split the \(cos(2\pi f_c t + \theta_i)\) into two
+cosine and sine terms for orthogonality.
+
+\hypertarget{b}{%
+\subsection*{b)}\label{b}}
+
+First find \(d_\text{min}\) for use in both upper bound and lower bound
+equations.
+
+\(d_\text{min}\) is minimum Euclidian distance between any two
+constellation points.
+
+\[
+\begin{align*}
+d_\text{min} &= \sqrt{\left(p(t) - p(t)\frac{\sqrt{2}}{2}\right)^2 + \left(p(t)\frac{\sqrt{2}}{2}\right)^2} \\
+&= p(t)\sqrt{\left(1-\frac{\sqrt{2}}{2}\right)^2 + \left(\frac{\sqrt{2}}{2}\right)^2} \\
+\end{align*}
+\]
+
+Using \(E_s = p^2(t)\) and therefore
+\(\sqrt{r_s} = \frac{p(t)}{\sqrt{N_0}}\)
+
+\[
+\begin{align*}
+\frac{d_\text{min}}{\sqrt{2N_0}}
+&= \frac{\sqrt{2-\sqrt{2}}}{\sqrt{2}} \cdot \frac{p(t)}{\sqrt{N_0}} \\
+&= \frac{\sqrt{2-\sqrt{2}}}{\sqrt{2}} \cdot \sqrt{r_s} \\
+\end{align*}
+\] And that goes inside the Q-function for the bounds:
+
+\hypertarget{upper-bound}{%
+\subsubsection*{Upper bound}\label{upper-bound}}
+
+Use the following for the upper bound:
+
+\[
+    P_e \leq (M-1) Q\left(\frac{d_\text{min}}{\sqrt{2N_0}}\right)
+\]
+
+\hypertarget{lower-bound}{%
+\subsubsection*{Lower bound}\label{lower-bound}}
+
+Use the following for the lower bound: \[
+    P_e \geq \frac{1}{M} Q\left(\frac{d_\text{min}}{\sqrt{2N_0}}\right)
+\]
+
+\hypertarget{problem-4}{%
+\section*{Problem 4}\label{problem-4}}
+
+Rectangular 16-QAM setup such that 2A is the min distance between each
+of the lines.
+
+\hypertarget{a-solve-for-the-symbol-error-rate}{%
+\subsection*{a) Solve for the Symbol Error
+Rate}\label{a-solve-for-the-symbol-error-rate}}
+
+\[
+\begin{align*}
+P_e &= \frac{4(\sqrt{M}-1)}{\sqrt{M}} Q\left(\frac{d_\text{min}}{\sqrt{2 N_0}}\right) - \frac{4 (\sqrt{M}-1)^2}{M}Q^2\left(\frac{d_\text{min}}{\sqrt{2 N_0}}\right)
+\\ \\
+&= {3}Q\left(\frac{2A}{\sqrt{2N_0}}\right) - \frac{9}{4}Q^2\left(\frac{2A}{\sqrt{2N_0}}\right)
+\end{align*}
+\]
+
+\hypertarget{b-solve-for-the-bit-error-rate}{%
+\subsection*{b) Solve for the Bit Error
+Rate}\label{b-solve-for-the-bit-error-rate}}
+
+Bit error rate is approximately calculated below because the 16-QAM
+constellation is Gray-coded.
+
+\[
+\begin{align*}
+\text{BER} &= \frac{1}{\log_2(M)} \cdot P_e  \\
+&= \frac{1}{4} \cdot P_e
+\end{align*}
+\]
+
+\hypertarget{problem-5}{%
+\section*{Problem 5}\label{problem-5}}
+
+Two contellations used alternately in the transmission of a signal.
+Standard QPSK and \(\frac{\pi}{4}\)-QPSK. Odd index use standard QPSK,
+and even index use \(\frac{\pi}{4}\)-QPSK.
+
+Use the low-pass equivalent and show the magnitudes of the real and
+imaginary parts of \(\tilde\phi\) line.
+
+Standard QPSK lowpass equivalent:
+
+\(\tilde{s_1} = \sqrt{2E_s}\)
+
+\(\tilde{s_2} = j\sqrt{2E_s}\)
+
+\(\tilde{s_3} = -\sqrt{2E_s}\)
+
+\(\tilde{s_4} = -j\sqrt{2E_s}\)
+
+\(\frac{\pi}{4}\)-QPSK lowpass equivalent:
+
+\(\tilde{s_1} = \sqrt{E_s} + j\sqrt{E_s}\)
+
+\(\tilde{s_2} = -\sqrt{E_s} + j\sqrt{E_s}\)
+
+\(\tilde{s_3} = -\sqrt{E_s} - j\sqrt{E_s}\)
+
+\(\tilde{s_4} = \sqrt{E_s} -j\sqrt{2_s}\)
