@@ -1,27 +1,30 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-class BMatrix:
-    def __init__(self, data):
-        self.data = data
+class BMatrix(np.ndarray):
+    def __new__(cls, data):
+        obj = np.asarray(data).view(cls)
+        return obj
 
     def _mod2(self, data):
         return data % 2
 
     def __add__(self, other):
-        res = BMatrix(self.data + other.data)
-        return self._mod2(res)
+        res = super().__add__(other)
+        return self._mod2(res).view(BMatrix)
 
     def __mul__(self, scalar):
-        return self._mod2(self.data * scalar)
+        result = super().__mul__(scalar)
+        return self._mod2(result).view(BMatrix)
 
     def __matmul__(self, other):
-        return self._mod2(self.data @ other.data)
+        result = super().__matmul__(other)
+        return self._mod2(result).view(BMatrix)
 
-H = np.array([[0, 1, 1, 1, 1, 0, 0],
+H = BMatrix([[0, 1, 1, 1, 1, 0, 0],
               [1, 0, 1, 1, 0, 1, 0],
               [1, 1, 0, 1, 0, 0, 1]])
-G = np.array([[1, 0, 0, 0, 0, 1, 1],
+G = BMatrix([[1, 0, 0, 0, 0, 1, 1],
               [0, 1, 0, 0, 1, 0, 1],
               [0, 0, 1, 0, 1, 1, 0],
               [0, 0, 0, 1, 1, 1, 1]])
@@ -35,6 +38,9 @@ def main():
     print(G.shape)
     print(E)
     print(S)
+    ones = np.ones(S.shape, dtype=int)
+    print(S + ones)
+
 
 
 if __name__ == '__main__':
