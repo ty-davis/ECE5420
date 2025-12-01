@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "frannor.h"
+#include "noise.h"
 #include <time.h>
 #include <math.h>
 
@@ -122,8 +122,7 @@ int uncoded_errors(int ndata, double n_0, int seed_offset) {
 		fprintf(stderr, "time() failed to set seed");
 		exit(1);
 	}
-	srannor(seed);
-	srand(seed);
+	seed_xoro(seed);
 
 	int errors = 0;
 	int bit;
@@ -132,7 +131,7 @@ int uncoded_errors(int ndata, double n_0, int seed_offset) {
 	for (i = 0; i < ndata; i++) {
 		bit = rand() & 1;
 		received = (double)bit * 2 - 1; // convert to -1 or 1
-		received += frannor() * sqrt(n_0/2);
+		received += gaussian_noise() * sqrt(n_0/2);
 		errors += (received > 0 && bit) || (received <= 0 && !bit) ? 0 : 1;
 	}
 	return errors;
@@ -152,7 +151,6 @@ int hamming_errors(int ndata, double n_0, int seed_offset) {
 		fprintf(stderr, "time() failed to set seed");
 		exit(1);
 	}
-	srannor(seed);
 	srand(seed);
 
 	int errors = 0;
@@ -165,7 +163,7 @@ int hamming_errors(int ndata, double n_0, int seed_offset) {
 	int bits_received[4] = {0};
 	double received[7] = {0};
 	int codeword_received[7] = {0};
-	for (i=0; i<ndata/4; i++) {
+	for (i = 0; i < ndata/4; i++) {
 		// generate the random bits
 		data = rand() % 16;
 		data_to_bits(bits, data, 4);
@@ -177,7 +175,7 @@ int hamming_errors(int ndata, double n_0, int seed_offset) {
 			received[j] = (double)(codeword[j] * 2 - 1);
 		}
 		for (j=0; j<7; j++) {
-			received[j] += (double)frannor() * sqrt(n_0/2);
+			received[j] += gaussian_noise() * sqrt(n_0/2);
 		}
 		// printarr_double(received, 7);
 

@@ -94,6 +94,8 @@ def main():
 
 
 
+    print("FINISHED", time.time() - start)
+    print_data(SNR_dB, ser_results)
     plot_data(SNR_dB, ser_results)
 
 def plot_data(x, results):
@@ -105,6 +107,21 @@ def plot_data(x, results):
         plt.legend()
         plt.semilogy()
     plt.show()
+
+def print_data(x, results):
+    keys = [key for key in results.keys() if len(x) == len(results[key])]
+    print(f"SNR_dB", end="\t")
+    for key in keys:
+        print(key, end="\t")
+    print()
+    for i in range(len(x)):
+        print(f"{x[i]}", end='\t')
+        for key in keys:
+            print(f"{results[key][i]:0.5e}", end='\t')
+
+        print()
+
+
 
 
 if __name__ == '__main__':

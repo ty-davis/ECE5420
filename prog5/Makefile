@@ -2,7 +2,7 @@ CC = gcc
 CFLAGS = -fPIC -Wall -I./include
 LDFLAGS = -shared
 
-SRC = channel_coding.c frannor.c
+SRC = channel_coding.c noise.c
 OBJ = $(SRC:.c=.o)
 TARGET = channel_coding.so
 
