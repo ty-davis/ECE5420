@@ -5,6 +5,14 @@ import time
 import sys
 from scipy.special import erfc
 from multiprocessing import Pool, cpu_count
+import ctypes
+
+channel_coding = ctypes.CDLL('./channel_coding.so')
+channel_coding.hamming_errors.argtypes = [ctypes.c_int, ctypes.c_double, ctypes.c_int]
+channel_coding.hamming_errors.restype = ctypes.c_int
+channel_coding.uncoded_errors.argtypes = [ctypes.c_int, ctypes.c_double, ctypes.c_int]
+channel_coding.uncoded_errors.restype = ctypes.c_int
+
 
 start = time.time()
 
@@ -12,104 +20,95 @@ N = 10**9
 Ep = 1
 SNR_dB = np.array([6, 8, 10, 12]) # Eb / N0 in dB
 
-# SOME global matrices for the calculations
-# hamming parity-check matrix
-H = np.array([[0, 1, 1, 1, 1, 0, 0],
-              [1, 0, 1, 1, 0, 1, 0],
-              [1, 1, 0, 1, 0, 0, 1]])
-# generator matrix
-G = np.array([[1, 0, 0, 0, 0, 1, 1],
-              [0, 1, 0, 0, 1, 0, 1],
-              [0, 0, 1, 0, 1, 1, 0],
-              [0, 0, 0, 1, 1, 1, 1]])
-
-# errors matrix
-E = np.array([list(reversed([1 if i == j else 0 for i in range(H.shape[1])])) for j in range(H.shape[1] + 1)])
-# syndrome matrix
-S = E @ H.T % 2
-# syndrome translation dict
-def hash(arr):
-    total = 0
-    l = len(arr)
-    for i in range(l):
-        total += arr[i] << (l-i - 1)
-    return total
-
-syn_tran = {hash(S[i]): E[i] for i in range(S.shape[0])}
-
-# info and code matrices
-info_mat = np.array([[int(x) for x in list(f"{bin(i)[2:]:0>4}")] for i in range(16)])
-codes_mat = info_mat @ G % 2
-codes_to_info = {hash(codes_mat[i]): info_mat[i] for i in range(codes_mat.shape[0])}
-
 def Q(x, n=2):
     return 0.5 * erfc(x / np.sqrt(n))
 
-def process_segment(args):
+def hamming_segment(args):
     amount, n0, seed_offset = args
-    np.random.seed(int(time.time()) + seed_offset)
-    data = np.random.randint(0, 16, amount // 4)
-    codewords = np.array([codes_mat[x] for x in data])
-    codewords_norm = (codewords * 2 - 1) * Ep
-    print(f"1: {time.time() - start:.1f}", seed_offset)
+    result = channel_coding.hamming_errors(amount, n0, seed_offset)
+    print(amount, n0, result)
+    return result
 
-    noise = np.random.randn(*codewords.shape) * np.sqrt(n0/2)
-    received = (codewords_norm + noise > 0).astype(int)
-
-    del codewords, noise
-    print(f"2: {time.time() - start:.1f}", seed_offset)
-
-    syndromes = np.array([hash(row) for row in received @ H.T % 2])
-    error_patterns = [syn_tran[h] for h in syndromes]
-    received ^= error_patterns
-    print(f"3: {time.time() - start:.1f}", seed_offset)
-    del syndromes, error_patterns
-
-    info_received = np.array([codes_to_info[hash(row)] for row in received])
-    data_bits = np.array([info_mat[d] for d in data])
-
-    errors = np.sum(data_bits != info_received)
-    print(f"4: {time.time() - start:.1f}", seed_offset)
-    return errors
-
+def uncoded_segment(args):
+    amount, n0, seed_offset = args
+    result = channel_coding.uncoded_errors(amount, n0, seed_offset)
+    print(amount, n0, result)
+    return result
 
 def main():
-    print(E, S, sep="\n")
+    channel_coding.init_hash()
     snr_linear = 10 ** (SNR_dB / 10)
 
-    num_processes = 3
-    segment_amount = 10**8
+    num_processes = 16
+    segment_amount = 10**8 // 2
     assert segment_amount % 4 == 0
-    ser_results = []
+    ser_results = {
+        'uncoded_theory': [],
+        'uncoded_sim': [],
+
+        'hamming_theory': [],
+        'hamming_sim': [],
+
+        'conv_theory': [],
+        'conv_sim': [],
+    }
     for snr in snr_linear:
-        print(f"{snr}", time.time())
+        print(f"{snr}", time.time() - start)
         n0 = Ep / snr
         ptr = 0
-        segments = []
+        uncoded_segments = []
+        hamming_segments = []
+        conv_segments = []
         seed_offset = 0
 
+        # build the segments stuff
         while ptr < N:
             amount = min(segment_amount, N-ptr)
-            segments.append((amount, n0, seed_offset))
+            hamming_segments.append((amount, n0, seed_offset))
+            uncoded_segments.append((amount, n0, seed_offset + 100))
+            conv_segments.append((amount, n0, seed_offset + 10000))
             ptr += segment_amount
             seed_offset += 1
 
-        with Pool(processes=num_processes) as pool:
-            results = pool.map(process_segment, segments)
 
-        errors_total = sum(results)
-        ser_results.append(errors_total / N)
-        print(errors_total / N, "\n\n")
+        # uncoded
+        with Pool(processes=num_processes) as pool:
+            uncoded_errors = pool.map(uncoded_segment, uncoded_segments)
+        uncoded_errors_total = sum(uncoded_errors)
+        ser_results['uncoded_sim'].append(uncoded_errors_total / N)
+
+        ser_results['uncoded_theory'].append(Q(np.sqrt(2 * snr)))
+
+        # hamming
+        with Pool(processes=num_processes) as pool:
+            hamming_errors = pool.map(hamming_segment, hamming_segments)
+        hamming_errors_total = sum(hamming_errors)
+        ser_results['hamming_sim'].append(hamming_errors_total / N)
+
+        n0_hamming = n0 * 4 / 7
+        ber_hamming_theory = Q(np.sqrt(2 * Ep / n0_hamming))
+        ser_results['hamming_theory'].append(ber_hamming_theory)
+
+        # convolutional
+
+
+
 
     plot_data(SNR_dB, ser_results)
 
-def plot_data(x, y):
-    plt.plot(x, y)
+def plot_data(x, results):
+    for name, vals in results.items():
+        if len(x) != len(vals):
+            continue
+        print("PLOTTING:", name)
+        plt.plot(x, vals, label=name)
+        plt.legend()
+        plt.semilogy()
     plt.show()
 
 
-# if __name__ == '__main__':
-#     main()
+if __name__ == '__main__':
+    main()
 
 
 # notes
