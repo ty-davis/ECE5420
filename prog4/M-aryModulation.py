@@ -42,7 +42,6 @@ def process_segment(args):
 
 def main(argv):
     start = time.time()
-    np.random.seed(int(time.time()))
     snr_linear = 10 ** (SNR_dB / 10)
     ser_results = []
     upper_bounds = []
