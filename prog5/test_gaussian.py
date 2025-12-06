@@ -5,7 +5,7 @@ channel_coding = ctypes.CDLL('./channel_coding.so')
 channel_coding.gaussian_noise.restype = ctypes.c_double
 channel_coding.seed_xoro.argtypes = [ctypes.c_int]
 
-N = 100000000
+N = 10000000
 channel_coding.seed_xoro(int(time.time()))
 x = [channel_coding.gaussian_noise() for _ in range(N)]
 
@@ -22,7 +22,7 @@ for i in range(1, 5):
     print("OUTSIDE:", (left_len + right_len) / N)
     print()
 
-# import matplotlib.pyplot as plt
-# plt.hist(x, bins=500)
-# plt.show()
+import matplotlib.pyplot as plt
+plt.hist(x, bins=500)
+plt.show()
 
