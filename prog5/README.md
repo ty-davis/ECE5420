@@ -1,6 +1,6 @@
 # Program 5 - Channel Coding
 
-![ber_fig.png]
+![BER Figure](ber_fig.png)
 
 ## Running the code
 
