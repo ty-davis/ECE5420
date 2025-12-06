@@ -1,0 +1,77 @@
+\documentclass[11pt]{style}
+
+\usepackage[english]{babel}
+\usepackage{siunitx}
+\usepackage{graphicx}
+\usepackage{blindtext}
+\usepackage{amsmath,amssymb,units}
+\usepackage[outdir=./]{epstopdf}
+\memostudent{Ty Davis}
+\memocourse{ECE 5420}
+\memosubject{Programming Assignment 5 - Channel Coding}
+\memodate{\today}
+\logo{\includegraphics[width=0.5\textwidth]{ece_horiz.pdf}}
+
+\begin{document}
+\maketitle
+
+Simulations were run for BPSK with and without channel coding.
+The channel coding was done with a (7,~4) hamming code and with
+and (2,~1,~2) convolutional filter. For the covolutional filter,
+I chose to zero-pad and use 128 bits in each pass of the filter,
+and as such I decided to use $R= 1/2$ for my coded-bit energy
+calculations.
+
+
+\begin{table}[h!]
+  \centering
+  \small
+\begin{tabular}{l|c c c c c c}
+$E_b$ & 1 & 1 & 1 & 1 \\
+$E_c$ for (7, 4) Hamming Code & 0.571 & 0.571 & 0.571 & 0.571 \\
+$E_c$ for Convolutional Code & 0.5 & 0.5 & 0.5 & 0.5 \\
+$N_0$ & 0.251 & 0.158 & 0.1 & 0.0631 \\
+$N_0$ for (7, 4) Hamming Code & 0.44 & 0.277 & 0.175 & 0.11 \\
+$N_0$ for Convolutional Code & 0.502 & 0.317 & 0.2 & 0.126 \\
+$\frac{E_b}{N_0}$ in dB & 6 & 8 & 10 & 12 \\
+$P_b$ in Q function & 2.82 & 3.55 & 4.47 & 5.63 \\
+$P_b$ theoretical value & 0.00239 & 0.000191 & 3.87e-06 & 9.01e-09 \\
+$P_b$ Simulated without Encoding & 0.00239 & 0.000193 & 3.9e-06 & 1.5e-08 \\
+$P_b$ Simulated with (7, 4) Hamming Code & 0.00233 & 0.000107 & 1.14e-06 & 8.75e-10 \\
+$P_b$ Simulated with Convolutional Code & 0.000663 & 1.11e-05 & 4.6e-08 & 2.5e-11 \\
+\end{tabular}
+\end{table}
+
+\begin{figure}[h!]
+  \centering
+  \includegraphics[width=0.8\textwidth]{ber_fig}
+\end{figure}
+
+\begin{figure}[h!]
+  \centering
+  \includegraphics[width=0.8\textwidth]{Convolutional Block Diagram}
+  \caption{The (2, 1, 2) block diagram used in the covolutional encoder/decoder}
+\end{figure}
+
+
+\begin{figure}[h!]
+Output from the Python script:
+\begin{verbatim}
+SNR_dB  conv_sim        hamming_sim     uncoded_theory
+0       1.93390e-01     1.18919e-01     7.86496e-02
+1       1.27401e-01     8.46048e-02     5.62820e-02
+2       7.09712e-02     5.49236e-02     3.75061e-02
+3       3.20615e-02     3.18923e-02     2.28784e-02
+4       1.14453e-02     1.63133e-02     1.25008e-02
+5       3.16460e-03     6.87367e-03     5.95387e-03
+6       6.62710e-04     2.33411e-03     2.38829e-03
+7       1.00120e-04     6.11660e-04     7.72675e-04
+8       1.10700e-05     1.07110e-04     1.90908e-04
+9       8.46000e-07     1.54340e-05     3.36272e-05
+10      4.60000e-08     1.14400e-06     3.87211e-06
+11      1.60000e-09     4.91000e-08     2.61307e-07
+12      2.50000e-11     8.75000e-10     9.00601e-09
+\end{verbatim}
+\end{figure}
+
+\end{document}

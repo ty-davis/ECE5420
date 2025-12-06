@@ -22,7 +22,7 @@ channel_coding.convolution_errors.restype = ctypes.c_int
 start = time.time()
 
 # this dictionary shows the number of bits which will be processed for a given SNR in dB
-snr_counts = {
+snr_bitcounts = {
     0: 10**7,
     1: 10**7,
     2: 10**7,
@@ -37,9 +37,9 @@ snr_counts = {
     11: 10**10,
     12: 4 * 10**10,
 }
-SNR_dBs = np.array([k for k in snr_counts.keys()]) # Eb / N0 in dB
-Ns = np.array([v for v in snr_counts.values()])
-Ep = 1
+SNR_dBs = np.array([k for k in snr_bitcounts.keys()]) # Eb / N0 in dB
+Ns = np.array([v for v in snr_bitcounts.values()])
+Eb = 1
 
 def Q(x, n=2):
     return 0.5 * erfc(x / np.sqrt(n))
@@ -71,7 +71,7 @@ def format_time(sec):
     return f"{int(t[0])}:{s[0]:0>2}.{s[1]}"
 
 
-def main():
+def simulate_data():
     channel_coding.init_hash()
 
     num_processes = min(28, cpu_count())
@@ -80,17 +80,15 @@ def main():
         'uncoded_theory': [],
         'uncoded_sim': [],
 
-        'hamming_theory': [],
         'hamming_sim': [],
 
-        'conv_theory': [],
         'conv_sim': [],
     }
     for snr_db, N in zip(SNR_dBs, Ns):
         print(f"Starting for {snr_db} dB.\t{format_time(time.time() - start)}")
         snr = 10 ** (snr_db / 10)
         segment_amount = N // num_processes
-        n0 = Ep / snr
+        n0 = Eb / snr
         ptr = 0
         uncoded_segments = []
         hamming_segments = []
@@ -108,10 +106,10 @@ def main():
 
 
         # uncoded
-        # with Pool(processes=num_processes) as pool:
-        #     uncoded_errors = pool.map(uncoded_segment, uncoded_segments)
-        # uncoded_errors_total = sum(uncoded_errors)
-        # ser_results['uncoded_sim'].append(uncoded_errors_total / N)
+        with Pool(processes=num_processes) as pool:
+            uncoded_errors = pool.map(uncoded_segment, uncoded_segments)
+        uncoded_errors_total = sum(uncoded_errors)
+        ser_results['uncoded_sim'].append(uncoded_errors_total / N)
 
         ser_results['uncoded_theory'].append(Q(np.sqrt(2 * snr)))
 
@@ -124,10 +122,6 @@ def main():
         elapsed_hamming = time.time() - start_hamming
         print(f"Finished hamming at {snr_db} dB in {format_time(elapsed_hamming)}")
 
-        # n0_hamming = n0
-        # ber_hamming_theory = Q(np.sqrt(2 * Ep / n0_hamming))
-        # ser_results['hamming_theory'].append(ber_hamming_theory)
-
         # convolutional
         start_conv = time.time()
         with Pool(processes=num_processes) as pool:
@@ -138,12 +132,18 @@ def main():
         print(f"Finished convolutional at {snr_db} dB in {format_time(elapsed_conv)}")
 
 
-    print("FINISHED in", format_time(time.time() - start))
-    print_data(SNR_dBs, ser_results)
-    plot_data(SNR_dBs, ser_results)
+    print("FINISHED SIMULATION in", format_time(time.time() - start))
+    return SNR_dBs, ser_results
+
+def round_sf(x, n):
+    """Round x to n sig figs"""
+    if x == 0:
+        return 0
+    return round(x, -int(np.floor(np.log10(abs(x)))) + (n - 1))
 
 def plot_data(x, results):
     names = {
+        'uncoded_sim': 'Without Encoding',
         'uncoded_theory': 'Theoretical',
         'hamming_sim': '(4, 7) Hamming',
         'conv_sim': '(2, 1, 2) Convolutional',
@@ -174,6 +174,62 @@ def print_data(x, results):
             print(f"{results[key][i]:0.5e}", end='\t')
         print()
 
+def print_latex_table(x, results):
+    snr_to_use = [6, 8, 10, 12]
+    snr_linear = [10 ** (snr/10) for snr in snr_to_use]
+    idxs = [list(x).index(i) for i, v in enumerate(x) if v in snr_to_use]
+    # res = [results[i] for i in idxs]
+
+    # Eb / n_0 = SNR
+    Ebs = [1 for snr in snr_linear]
+    Ec_ham = [eb * 4 / 7 for eb in Ebs]
+    Ec_conv = [eb * 1 / 2 for eb in Ebs]
+    N_0s = [1 / eb / snr for eb, snr in zip(Ebs, snr_linear)]
+    N_0_ham = [1 / eb / snr for eb, snr in zip(Ec_ham, snr_linear)]
+    N_0_conv = [1 / eb / snr for eb, snr in zip(Ec_conv, snr_linear)]
+    # eb / n0 in dB
+    P_b_in_q = [np.sqrt(2 * snr) for snr in snr_linear]
+    P_b_theory = [Q(pb) for pb in P_b_in_q]
+    P_b_sim = [results['uncoded_sim'][i] if i < len(results['uncoded_sim']) else 0 for i in idxs]
+    P_b_sim_ham = [results['hamming_sim'][i] for i in idxs]
+    P_b_sim_conv = [results['conv_sim'][i] for i in idxs]
+
+    row_titles = [
+        '$E_b$',
+        '$E_c$ for (7, 4) Hamming Code',
+        '$E_c$ for Convolutional Code',
+        '$N_0$',
+        '$N_0$ for (7, 4) Hamming Code',
+        '$N_0$ for Convolutional Code',
+        '$\\frac{E_b}{N_0}$ in dB',
+        '$P_b$ in Q function',
+        '$P_b$ theoretical value',
+        '$P_b$ Simulated without Encoding',
+        '$P_b$ Simulated with (7, 4) Hamming Code',
+        '$P_b$ Simulated with Convolutional Code',
+    ]
+    for j, row in enumerate([Ebs,
+                             Ec_ham,
+                             Ec_conv,
+                             N_0s,
+                             N_0_ham,
+                             N_0_conv,
+                             snr_to_use,
+                             P_b_in_q,
+                             P_b_theory,
+                             P_b_sim,
+                             P_b_sim_ham,
+                             P_b_sim_conv,
+                             ]):
+        print(row_titles[j], end=" & ")
+        for i in range(4):
+            if i < 3:
+                print(round_sf(row[i], 3), end=' & ')
+            else:
+                print(round_sf(row[i], 3), end=' \\\\')
+        print()
+
+
 
 if __name__ == '__main__':
     if '-d' in sys.argv:
@@ -191,7 +247,6 @@ if __name__ == '__main__':
                               4.6e-08,
                               1.6e-09,
                               2.5e-11],
-                 'conv_theory': [],
                  'hamming_sim': [0.1189188,
                                  0.0846048,
                                  0.0549236,
@@ -205,8 +260,19 @@ if __name__ == '__main__':
                                  1.144e-06,
                                  4.91e-08,
                                  8.75e-10],
-                 'hamming_theory': [],
-                 'uncoded_sim': [],
+                 'uncoded_sim': [0.078737,
+                                  0.0563434,
+                                  0.0375078,
+                                  0.0228655,
+                                  0.0124696,
+                                  0.00595641,
+                                  0.00239317,
+                                  0.00077609,
+                                  0.00019333,
+                                  3.43e-05,
+                                  3.9e-06,
+                                  2.9e-07,
+                                  1.5e-08],
                  'uncoded_theory': [0.07864960352514258,
                                     0.05628195197654147,
                                     0.03750612835892598,
@@ -222,6 +288,8 @@ if __name__ == '__main__':
                                     9.006010350628787e-09]}
         x = data['SNR_dB']
         results = {k: v for k, v in data.items() if k != 'SNR_dB'}
-        plot_data(x, results)
-        exit()
-    main()
+    else:
+        x, results = simulate_data()
+    print_latex_table(x, results)
+    print_data(x, results)
+    plot_data(x, results)
