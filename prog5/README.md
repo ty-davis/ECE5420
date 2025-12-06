@@ -16,11 +16,12 @@ python3 ChannelCoding.py
 
 Use `make` to compile the shared library binaries for either Windows or Linux.
 
+Linux:
 ```bash
 make
-
-
 ```
+
+Windows:
 ```bash
 make windows
 ```
