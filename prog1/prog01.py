@@ -18,7 +18,7 @@ def main():
     freqs_shifted = np.fft.fftshift(freqs)
     Y1_shifted = np.fft.fftshift(Y1)
     Y2_shifted = np.fft.fftshift(Y2)
-    
+
     # time domain plots
     axs[0, 0].plot(t, y1)
     axs[0, 0].set_title('Sinc Function')
