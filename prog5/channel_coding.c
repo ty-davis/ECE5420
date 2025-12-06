@@ -334,10 +334,10 @@ int hamming_errors(long long ndata, double n_0, int seed_offset) {
 	int j;
 	unsigned int seed;
 
-	if (ndata % 4 != 0) {
-		fprintf(stderr, "ndata must be divisible by 4");
-		exit(1);
-	}
+	// if (ndata % 4 != 0) {
+	// 	fprintf(stderr, "ndata must be divisible by 4");
+	// 	exit(1);
+	// }
 
 	if (-1 == (seed = (unsigned int) time((time_t *) NULL) + seed_offset)) {
 		fprintf(stderr, "time() failed to set seed");
