@@ -310,11 +310,12 @@ int uncoded_errors(long long ndata, double n_0, int seed_offset) {
 	int i;
 	unsigned int seed;
 
-	if (-1 == (seed = (unsigned int) time((time_t *) NULL) + seed_offset)) {
+	if (-1 == (seed = (unsigned int) time(NULL) + seed_offset)) {
 		fprintf(stderr, "time() failed to set seed");
 		exit(1);
 	}
 	seed_xoro(seed);
+	srand(seed);
 
 	int errors = 0;
 	int bit;
@@ -343,6 +344,7 @@ int hamming_errors(long long ndata, double n_0, int seed_offset) {
 		fprintf(stderr, "time() failed to set seed");
 		exit(1);
 	}
+	seed_xoro(seed);
 	srand(seed);
 
 	int errors = 0;

@@ -1,7 +1,10 @@
-import ctypes
 import time
+import ctypes
+import platform
 
-channel_coding = ctypes.CDLL('./channel_coding.so')
+lib_name = './channel_coding.dll' if platform.system() == 'Windows' else './channel_coding.so'
+channel_coding = ctypes.CDLL(lib_name)
+
 channel_coding.gaussian_noise.restype = ctypes.c_double
 channel_coding.seed_xoro.argtypes = [ctypes.c_int]
 

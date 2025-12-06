@@ -9,8 +9,8 @@ from multiprocessing import Pool, cpu_count
 import ctypes
 import platform
 
-lib_name = './channel_codingdll' if platform.system() == 'Windows' else './channel_coding.so'
-channel_coding = ctypes.CDLL('./channel_coding.so')
+lib_name = './channel_coding.dll' if platform.system() == 'Windows' else './channel_coding.so'
+channel_coding = ctypes.CDLL(lib_name)
 channel_coding.hamming_errors.argtypes = [ctypes.c_longlong, ctypes.c_double, ctypes.c_int]
 channel_coding.hamming_errors.restype = ctypes.c_int
 channel_coding.uncoded_errors.argtypes = [ctypes.c_longlong, ctypes.c_double, ctypes.c_int]
@@ -21,7 +21,6 @@ channel_coding.convolution_errors.restype = ctypes.c_int
 
 start = time.time()
 
-Ep = 1
 # this dictionary shows the number of bits which will be processed for a given SNR in dB
 snr_counts = {
     0: 10**7,
@@ -40,9 +39,13 @@ snr_counts = {
 }
 SNR_dBs = np.array([k for k in snr_counts.keys()]) # Eb / N0 in dB
 Ns = np.array([v for v in snr_counts.values()])
+Ep = 1
 
 def Q(x, n=2):
     return 0.5 * erfc(x / np.sqrt(n))
+
+def worker_init():
+    channel_coding.init_hash()
 
 def hamming_segment(args):
     amount, n0, seed_offset = args
@@ -114,7 +117,7 @@ def main():
 
         # hamming
         start_hamming = time.time()
-        with Pool(processes=num_processes) as pool:
+        with Pool(processes=num_processes, initializer=worker_init) as pool:
             hamming_errors = pool.map(hamming_segment, hamming_segments)
         hamming_errors_total = sum(hamming_errors)
         ser_results['hamming_sim'].append(hamming_errors_total / N)
@@ -133,7 +136,6 @@ def main():
         ser_results['conv_sim'].append(conv_errors_total / N)
         elapsed_conv = time.time() - start_conv
         print(f"Finished convolutional at {snr_db} dB in {format_time(elapsed_conv)}")
-
 
 
     print("FINISHED in", format_time(time.time() - start))
