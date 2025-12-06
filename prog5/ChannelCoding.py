@@ -7,7 +7,9 @@ import sys
 from scipy.special import erfc
 from multiprocessing import Pool, cpu_count
 import ctypes
+import platform
 
+lib_name = './channel_codingdll' if platform.system() == 'Windows' else './channel_coding.so'
 channel_coding = ctypes.CDLL('./channel_coding.so')
 channel_coding.hamming_errors.argtypes = [ctypes.c_longlong, ctypes.c_double, ctypes.c_int]
 channel_coding.hamming_errors.restype = ctypes.c_int
