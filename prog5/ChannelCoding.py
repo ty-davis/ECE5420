@@ -182,8 +182,8 @@ def print_latex_table(x, results):
 
     # Eb / n_0 = SNR
     Ebs = [1 for snr in snr_linear]
-    Ec_ham = [eb * 4 / 7 for eb in Ebs]
-    Ec_conv = [eb * 1 / 2 for eb in Ebs]
+    Ec_ham = [1 for eb in Ebs]
+    Ec_conv = [1 for eb in Ebs]
     N_0s = [1 / eb / snr for eb, snr in zip(Ebs, snr_linear)]
     N_0_ham = [1 / eb / snr for eb, snr in zip(Ec_ham, snr_linear)]
     N_0_conv = [1 / eb / snr for eb, snr in zip(Ec_conv, snr_linear)]
